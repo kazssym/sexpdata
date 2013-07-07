@@ -538,13 +538,14 @@ class Parser(object):
     quote_or_escape_re = re.compile(r'"|\\')
 
     def __init__(self, string, string_to=None, nil='nil', true='t', false=None,
-                 line_comment=';'):
+                 line_comment=';', parse_float=True):
         self.string = string
         self.nil = nil
         self.true = true
         self.false = false
         self.string_to = (lambda x: x) if string_to is None else string_to
         self.line_comment = line_comment
+        self.parse_float = parse_float
 
     def parse_str(self, i):
         string = self.string
@@ -606,9 +607,12 @@ class Parser(object):
         try:
             return int(token)
         except ValueError:
-            try:
-                return float(token)
-            except ValueError:
+            if self.parse_float:
+                try:
+                    return float(token)
+                except ValueError:
+                    return Symbol(token)
+            else:
                 return Symbol(token)
 
     def parse_sexp(self, i):
